@@ -80,21 +80,14 @@ namespace GenMethods.Selectors
         {
             double max = 0;
             GenerateMax();
-            List<RuletteValue> StartValues = new List<RuletteValue>();
-            List<RuletteValue> FinishValues = new List<RuletteValue>();
+            var startValues = new List<RuletteValue>();
             foreach (var item in Population.Osobi)
             {
                 var value=Formula(item.Value);
-                StartValues.Add(new RuletteValue(value, item.Value,item.Key));
+                startValues.Add(new RuletteValue(value, item.Value,item.Key));
                 max += value;
             }
-            /*foreach (var item in StartValues)
-            {
-                var value = (double)((double)item.Persent / (double)max);
-                FinishValues.Add(new RuletteValue(value*100,item.Value));
-            }*/
-            Values = StartValues;
-            //Max = max;
+            Values = startValues;
         }
     }
 }

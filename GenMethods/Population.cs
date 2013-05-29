@@ -18,7 +18,7 @@ namespace GenMethods
         public List<int> Pars;
         public Population(int min,int max)
         {
-            Osobi = new Dictionary<int, string>();//new List<string>();
+            Osobi = new Dictionary<int, string>();
             Pars = new List<int>();
             Min = min;
             Max = max;
