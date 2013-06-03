@@ -62,6 +62,7 @@
     <Compile Include="Selector.cs" />
     <Compile Include="Selectors\RuletteSelector.cs" />
     <Compile Include="Selectors\SelectorBase.cs" />
+    <Compile Include="Unit.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
