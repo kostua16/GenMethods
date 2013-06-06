@@ -9,84 +9,101 @@ namespace GenMethods
 {
     public class Population
     {
-        //public List<string> Osobi;
-        public Dictionary<int, string> Osobi;
+        public List<Unit> Osobi;
         public int Min=0;
         public int Max=999;
         public int Length=0;
         public int Count = 0;
-        public List<int> Pars;
-        public Population(int min,int max)
+        public int GensCount = 0;
+        public List<decimal> TempPopulation;
+        public List<Para> Pars; 
+
+        public IFormulaCalculator Formula;
+        public Population(IFormulaCalculator calculator)
         {
-            Osobi = new Dictionary<int, string>();
-            Pars = new List<int>();
-            Min = min;
-            Max = max;
+            Osobi = new List<Unit>();
+            TempPopulation = new List<decimal>();
+            Pars=new List<Para>();
+            Formula=calculator;
+            Min = Formula.Min;
+            Max = Formula.Max;
+            GensCount = Formula.Gens;
             GenerateLen();
+            GenerateNew(Formula.StartCount);
         }
-        public void GenerateNew(int count)
+        private void GenerateNew(int count)
         {
-            Random r = new Random();
+           
             for (int i = 0; i < count; i++)
             {
-                var temp = r.Next(Min, Max);
-                var result = DecToBin(temp - Min,Length);
-                Osobi.Add(i,result);
+                Osobi.Add(new Unit(GensCount, Length, Min, Max));
                 Count++;
             }
         }
-        public void GenerateLen()
+        private void GenerateLen()
         {
-            //Addin = Max - Min;
-            var minLen = (int)Math.Ceiling(Math.Log((double)(Max - Min),2));
+            var minLen = (int)Math.Ceiling(Math.Log(Max - Min,2));
             Length = minLen;
         }
-        public void MakeSelection(ISelector selector,int counpars=2)
+        public void Modificate(IModificator modificator,Dictionary<string, dynamic> params1)
         {
-            selector.Init(this);
-            var selection = selector.Select(counpars);
-            GenerateFrom(selection);
+            modificator.Init(this);
+            var population = modificator.Modificate(params1);
+            GenerateFrom(population);
         }
-        public void MakeCross(ICrossing crossing, int counpars = 2)
+        public void OneGeneration(IModificator selector, IModificator crosser, IModificator mytator,IModificator screener,Dictionary<string,dynamic> options=null)
         {
-            crossing.Init(this);
-            var cross = crossing.Cross(counpars);
-            GenerateFrom(cross);
-        }
-        public void GenerateFrom(Population p, Dictionary<int,string> data = null)
-        {
-            this.Length = p.Length;
-            this.Max = p.Max;
-            this.Min = p.Min;
-            this.Osobi = p.Osobi;
-            this.Count = p.Count;
-            this.Pars = p.Pars;
-            if (data != null) {
-                this.Osobi = data;
-                this.Count = data.Count;
-            }
-        }
-        public string DecToBin(Int32 a,int tolength=0)
-        {
-            string b = "";
-            while (a != 0)
+            if (Osobi.Count<5)
             {
-                b=(Convert.ToInt16(a % 2)).ToString() + b;
-                a /= 2;
+                return;
             }
-            if (tolength > 0)
-            {
-                b=b.PadLeft(tolength, '0');
-            }
-            return b;
+            CalculateFormula();
+            Modificate(mytator, options);
+            Modificate(selector,options);
+            Modificate(crosser,options);
+            CalculateFormula();
+            Modificate(screener,options);
         }
-        public int BinToDec(string a)
+        public void CalculateFormula()
         {
-            double b = 0;
-            for (double i = a.Length - 1; i >= 0; i--)
-                b += Convert.ToDouble(a.Substring(Convert.ToInt16(i), 1)) * Math.Pow(2, i);
-
-            return Convert.ToInt32(b);
+            var pop = Formula.Calculate(this);
+            GenerateFrom(pop);
+        }
+        public void GenerateFrom(Population p, List<Unit> data = null)
+        {
+            Length = p.Length;
+            Max = p.Max;
+            Min = p.Min;
+            Osobi = p.Osobi;
+            Count = p.Count;
+            GensCount = p.GensCount;
+            TempPopulation = p.TempPopulation;
+            Pars = p.Pars;
+            if (data == null) return;
+            Osobi = data;
+            Count = data.Count;
+        }
+        public Unit GetById(decimal id)
+        {
+            return Osobi.FirstOrDefault(unit => unit.Id == id);
+        }
+        public void ChangeById(decimal id,Unit unit2)
+        {
+            var unit1=Osobi.Find(unit => unit.Id == id);
+            var index = Osobi.IndexOf(unit1);
+            Osobi[index] = unit2;
+        }
+        public void Change(Unit unit1)
+        {
+            ChangeById(unit1.Id,unit1);
+        }
+        public double GetMax()
+        {
+            return Osobi.Count > 0 ? Osobi.Max(u => u.Function) : 0;
+        }
+        public double GetMin()
+        {
+            return Osobi.Count > 0 ? Osobi.Min(u => u.Function) : 0;
         }
     }
 }

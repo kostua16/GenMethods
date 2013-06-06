@@ -9,12 +9,12 @@ namespace GenMethods
     public interface IModificator
     {
         void Init(Population p);
-        Population Modificate(dynamic[] options);
+        Population Modificate(Dictionary<string, dynamic> options);
     }
     public abstract class Modificator:IModificator
     {
         protected Population Population;
-        protected dynamic[] Options;
+        protected Dictionary<string, dynamic> Options;
         protected Random Randomizer;
         public ModificatorType Type { get; set; }
 
@@ -30,7 +30,7 @@ namespace GenMethods
             Randomizer=new Random();
         }
 
-        public Population Modificate(dynamic[] options)
+        public Population Modificate(Dictionary<string, dynamic> options)
         {
             Options = options;
             try
@@ -43,7 +43,7 @@ namespace GenMethods
             }
         }
         public abstract Population Run();
-        protected dynamic GetOption(int index, dynamic defaultvalue)
+        protected dynamic GetOption(string index, dynamic defaultvalue)
         {
             try
             {
@@ -80,6 +80,35 @@ namespace GenMethods
             { 
                 return GetRandom()/ddot;
             }
+        }
+        public double AverageFitness()
+        {
+            double based=0;
+            if (Population.Osobi.Count > 0)
+            {
+                based = Population.Osobi.Average(unit => unit.Function);
+            }
+            
+            double pars = 0;
+            if (Population.Pars.Count > 0)
+            {
+                pars = Population.Pars.Average(unit => unit.Children.Average(un => un.Function));
+            }
+            var aver = new List<double> { based, pars }.Average(unit => unit);
+            return aver;
+        }
+        public List<Unit> GetAll()
+        {
+            var based = Population.Osobi;
+            var news= new List<Unit>();
+            if (Population.Pars.Count > 0)
+            {
+                news = Population.Pars.SelectMany(unit => unit.Children).ToList();
+            }
+            var res = new List<Unit>();
+            res.AddRange(based);
+            res.AddRange(news);
+            return res;
         }
     }
 }

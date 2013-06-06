@@ -6,88 +6,57 @@ using System.Threading.Tasks;
 
 namespace GenMethods.Selectors
 {
-    public class RuletteValue
+    public class RuletteSelector:SelectorBase
     {
-        public double Persent;
-        public string Value;
-        public int Id;
-        public RuletteValue(double persent, string value,int id)
+        private readonly Dictionary<decimal, double> Values;
+        double _max;
+        public RuletteSelector()
         {
-            Persent = persent;
-            Value = value;
-            Id = id;
+            Values = new Dictionary<decimal, double>();
+            _max = 0;
         }
-    }
-    public class RuletteSelector:Selector
-    {
-        Dictionary<int, string> values;
-        List<RuletteValue> Values;
-        double Max;
-        public RuletteSelector():base()
+        public double Formula(Unit item)
         {
-            values = new Dictionary<int, string>();
-            Values = new List<RuletteValue>();
-            Max = 0;
-        }
-        public override Population Select(int countpars)
-        {
-            Random r = new Random();
-            Population.Pars.Clear();
-            
-            GenerateRulette();
-            //foreach (var item in Values)
-            //{
-            //    Population.Pars.Add(string.Format("{0}-{1}", item.Value, item.Persent));
-            //}
-           // return Population;
-            for (int i = 0; i < countpars*2; i++)
-            {
-                var value = r.Next(0, 100);
-                double sum=0;
-                double current = 0;
-                foreach (var item in Values)
-                {
-                    current = Values.IndexOf(item);
-                    sum+=item.Persent;
-                    
-                    if (sum >= value)
-                    {
-                        Population.Pars.Add(item.Id);
-                        break;
-                    }
-                }
-                
-
-            }
-            return Population;
-        }
-        public double Formula(string item)
-        {
-            var value = Population.BinToDec(item);
-            double temp = (double)((double)value / (double)Max);
-            double res = temp*100;
+            var value = item.Function;
+            var temp = (double)((double)value / (double)_max);
+            var res = temp*100;
             return res;
         }
         public void GenerateMax()
         {
-            Max = 0;
+            _max = 0;
             foreach (var item in Population.Osobi)
             {
-                Max += Population.BinToDec(item.Value);
+                _max += item.Function;
             }
         }
         public void GenerateRulette()
         {
-            double max = 0;
             GenerateMax();
-            var startValues = new List<RuletteValue>();
+            Values.Clear();
             foreach (var item in Population.Osobi)
             {
-                var value=Formula(item.Value);
-                startValues.Add(new RuletteValue(value, item.Value,item.Key));
-                max += value;
+                var value=Formula(item);
+                if(!Values.ContainsKey(item.Id)) Values.Add(item.Id,value);
             }
-            Values = startValues;
+        }
+
+        public override Population Run()
+        {
+            var pars = GetOption("selector_pars", Population.Osobi.Count/4);
+            Population.TempPopulation.Clear();
+            GenerateRulette();
+            for (int i = 0; i < pars*2; i++)
+            {
+                var value = Randomizer.Next(0, 100);
+                double sum = 0;
+                foreach (var pair in Values)
+                {
+                    sum += pair.Value;
+                    if (sum >= value) { Population.TempPopulation.Add(pair.Key);break;}
+                }
+            }
+            return Population;
         }
     }
 }

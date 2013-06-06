@@ -11,7 +11,6 @@ namespace GenMethods.Selectors
         public override void OnCreate()
         {
             Type=ModificatorType.Selector;
-            //throw new NotImplementedException();
         }
 
     }

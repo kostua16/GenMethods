@@ -20,14 +20,19 @@ namespace GenMethods
         public List<String> Gens { get; set; }
         public double Function { get; set; }
         public decimal Id { get; set; }
-        public Unit(int countgens,int len,int min,int max)
+        public Unit()
         {
             Id = IdManager.GetNew();
+            Gens = new List<String>();
+        }
+        public Unit(int countgens,int len,int min,int max):this()
+        {
             Generate(countgens,len,min,max);
         }
         public void Generate(int countgens,int len, int min, int max)
         {
             var r = new Random();
+            
             for (var i = 0; i < countgens; i++)
             {
                 var temp = r.Next(min, max);

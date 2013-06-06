@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace GenMethods
 {
-    public enum ModificatorType
+    public class Para
     {
-        Selector,
-        Crossing,
-        Mutator,
-        Screener
+        public Unit Father;
+        public Unit Mother;
+        public List<Unit> Children;
     }
 }
